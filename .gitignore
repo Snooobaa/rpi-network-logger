@@ -3,3 +3,4 @@ update_database.py
 test.py
 internet_dropouts.db
 venv
+.DS_Store
