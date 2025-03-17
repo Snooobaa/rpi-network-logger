@@ -5,7 +5,7 @@ import datetime
 import os
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv(override=True)
 
 PING_TARGET = "8.8.8.8"
 CHECK_INTERVAL = 0.5
@@ -18,17 +18,19 @@ cursor.execute('''
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		start_time TEXT NOT NULL,
 		end_time TEXT NOT NULL,
-		duration TEXT NOT NULL
+		duration TEXT NOT NULL,
+		duration_seconds REAL NOT NULL
 	)
 ''')
 conn.commit()
 
 def log_dropout(start_time, end_time):
 	duration = end_time - start_time
+	duration_seconds = duration.total_seconds()
 	cursor.execute('''
-		INSERT INTO dropouts (start_time, end_time, duration)
-		VALUES (?, ?, ?)
-	''', (start_time.isoformat(), end_time.isoformat(), str(duration)))
+		INSERT INTO dropouts (start_time, end_time, duration, duration_seconds)
+		VALUES (?, ?, ?, ?)
+	''', (start_time.isoformat(), end_time.isoformat(), str(duration), duration_seconds))
 	conn.commit()
 
 def check_internet():

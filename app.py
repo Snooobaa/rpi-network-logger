@@ -7,7 +7,7 @@ import os
 
 app = Flask(__name__)
 
-load_dotenv()
+load_dotenv(override=True)
 
 DATABASE = os.getenv("DATABASE_PATH")
 
@@ -19,11 +19,11 @@ def get_dropouts(min_duration=None, max_duration=None):
 	params = []
 
 	if min_duration:
-		query += ' AND duration >= ?'
-		params.append(min_duration)
+		query += ' AND duration_seconds >= ?'
+		params.append(float(min_duration))
 	if max_duration:
-		query += ' AND duration <= ?'
-		params.append(max_duration)
+		query += ' AND duration_seconds <= ?'
+		params.append(float(max_duration))
 
 	query += ' ORDER BY start_time DESC'
 
@@ -34,8 +34,8 @@ def get_dropouts(min_duration=None, max_duration=None):
 
 @app.route("/")
 def index():
-	min_duration = request.args.get('min_duration', type=str)
-	max_duration = request.args.get('max_duration', type=str)
+	min_duration = request.args.get('min_duration', type=float)
+	max_duration = request.args.get('max_duration', type=float)
 
 	dropouts = get_dropouts(min_duration, max_duration)
 	return render_template("index.html", dropouts=dropouts)
