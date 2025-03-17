@@ -1,11 +1,15 @@
 from flask import Flask, render_template, request
+from dotenv import load_dotenv
 import datetime
 from datetime import timedelta
 import sqlite3
+import os
 
 app = Flask(__name__)
 
-DATABASE = "/home/nick/programming/networklogger/internet_dropouts.db"
+load_dotenv()
+
+DATABASE = os.getenv("DATABASE_PATH")
 
 def get_dropouts(min_duration=None, max_duration=None):
 	conn = sqlite3.connect(DATABASE)

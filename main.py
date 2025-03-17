@@ -2,12 +2,15 @@ import sqlite3
 import time
 import subprocess
 import datetime
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 PING_TARGET = "8.8.8.8"
-LOG_FILE = "/home/nick/programming/networklogger/internet_dropouts.log"
 CHECK_INTERVAL = 0.5
 
-conn = sqlite3.connect('/home/nick/programming/networklogger/internet_dropouts.db')
+conn = sqlite3.connect(os.getenv("DATABASE_PATH"))
 cursor = conn.cursor()
 
 cursor.execute('''
