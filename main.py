@@ -1,0 +1,57 @@
+import sqlite3
+import time
+import subprocess
+import datetime
+
+PING_TARGET = "8.8.8.8"
+LOG_FILE = "/home/nick/programming/networklogger/internet_dropouts.log"
+CHECK_INTERVAL = 0.5
+
+conn = sqlite3.connect('/home/nick/programming/networklogger/internet_dropouts.db')
+cursor = conn.cursor()
+
+cursor.execute('''
+	CREATE TABLE IF NOT EXISTS dropouts (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		start_time TEXT NOT NULL,
+		end_time TEXT NOT NULL,
+		duration TEXT NOT NULL
+	)
+''')
+conn.commit()
+
+def log_dropout(start_time, end_time):
+	duration = end_time - start_time
+	cursor.execute('''
+		INSERT INTO dropouts (start_time, end_time, duration)
+		VALUES (?, ?, ?)
+	''', (start_time.isoformat(), end_time.isoformat(), str(duration)))
+	conn.commit()
+
+def check_internet():
+	try:
+		output = subprocess.check_output(["ping", "-c", "1", PING_TARGET], stderr=subprocess.STDOUT, universal_newlines=True)
+		return True
+	except subprocess.CalledProcessError:
+		return False
+
+def main():
+	dropout_start = None
+
+	while True:
+		if not check_internet():
+			if dropout_start is None:
+				dropout_start = datetime.datetime.now()
+				print("Internet dropout detected. Logging...")
+		else:
+			if dropout_start is not None:
+				dropout_end = datetime.datetime.now()
+				log_dropout(dropout_start,  dropout_end)
+				dropout_start = None
+				print("Internet restored. Logged.")
+
+		time.sleep(CHECK_INTERVAL)
+
+if __name__ == "__main__":
+	main()
+
